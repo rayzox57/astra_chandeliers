@@ -8,11 +8,11 @@ const Config = {
 	BaseSize: 1000,
 	CandleRatio: 72 / 1000,
 	CandleCoords: [
-		{ x: 500, y: 58 },
-		{ x: 949, y: 500 },
-		{ x: 725, y: 889 },
-		{ x: 276, y: 889 },
-		{ x: 52, y: 500 },
+		{ x: 500, y: 68 },
+		{ x: 911, y: 365 },
+		{ x: 754, y: 850 },
+		{ x: 246, y: 850 },
+		{ x: 89, y: 365 },
 	],
 	ChandelierConfigs: {
 		'2_2': [1, 0, 1, 0, 0],
