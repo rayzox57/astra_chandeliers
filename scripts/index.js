@@ -65,6 +65,7 @@ const State = {
 	offPatterns: {},
 	theoryModalAlreadyOpen: false,
 	candlesModalAlreadyOpen: false,
+	pendingImport: null,
 };
 
 class Candle {
@@ -375,6 +376,94 @@ const GameManager = {
 			.addEventListener('change', (e) => Tracker.importExcel(e.target));
 
 		document
+			.getElementById('btn-conflict-cancel')
+			.addEventListener('click', () => {
+				document.getElementById('import-conflict-modal').style.display =
+					'none';
+				State.pendingImport = null;
+				document.getElementById('file-upload').value = '';
+			});
+
+		document
+			.getElementById('btn-conflict-save')
+			.addEventListener('click', () => {
+				document.getElementById('import-conflict-modal').style.display =
+					'none';
+
+				const currentName =
+					document.getElementById('trk-project').value ||
+					`Astra_Data_${Date.now()}`;
+
+				document.getElementById('save-file-name').value = currentName;
+
+				document.getElementById('save-prompt-modal').style.display =
+					'flex';
+			});
+		document
+			.getElementById('btn-save-cancel')
+			.addEventListener('click', () => {
+				document.getElementById('save-prompt-modal').style.display =
+					'none';
+				document.getElementById('import-conflict-modal').style.display =
+					'flex';
+			});
+
+		document
+			.getElementById('btn-save-confirm')
+			.addEventListener('click', () => {
+				const finalName =
+					document.getElementById('save-file-name').value;
+				Tracker.exportExcel(finalName);
+				document.getElementById('save-prompt-modal').style.display =
+					'none';
+
+				setTimeout(() => {
+					if (State.pendingImport) {
+						Tracker.applyImportData(
+							State.pendingImport.name,
+							State.pendingImport.data,
+						);
+						State.pendingImport = null;
+					}
+				}, 500);
+			});
+
+		document
+			.getElementById('btn-conflict-overwrite')
+			.addEventListener('click', () => {
+				document.getElementById('import-conflict-modal').style.display =
+					'none';
+				document.getElementById('import-confirm-modal').style.display =
+					'flex';
+			});
+
+		document
+			.getElementById('btn-confirm-yes')
+			.addEventListener('click', () => {
+				if (State.pendingImport) {
+					Tracker.applyImportData(
+						State.pendingImport.name,
+						State.pendingImport.data,
+					);
+					State.pendingImport = null;
+				}
+				document.getElementById('import-confirm-modal').style.display =
+					'none';
+			});
+
+		document
+			.getElementById('btn-confirm-no')
+			.addEventListener('click', () => {
+				document.getElementById('import-confirm-modal').style.display =
+					'none';
+				document.getElementById('import-conflict-modal').style.display =
+					'flex';
+			});
+		document
+			.getElementById('file-upload')
+			.addEventListener('change', (e) => Tracker.importExcel(e.target));
+
+		document
 			.getElementById('btn-overwrite-yes')
 			.addEventListener('click', Tracker.confirmOverwrite.bind(Tracker));
 		document
@@ -534,7 +623,6 @@ const GameManager = {
 		Config.Patterns.forEach((pat, idx) => {
 			const parts = pat.split(';');
 			for (let i = 0; i < 4; i++) {
-				// CHANGE: Replaced "OffPattern" with "OffLayout"
 				const name = `OffLayout ${idx + 1}-${order[i]}`;
 
 				let pUnlit = [...parts];
@@ -832,6 +920,49 @@ const GameManager = {
 };
 
 const Tracker = {
+	showCustomAlert(title, message) {
+		document.getElementById('alert-title').textContent = title;
+		document.getElementById('alert-message').innerHTML = message;
+		document.getElementById('alert-modal').style.display = 'flex';
+
+		const btn = document.getElementById('btn-alert-ok');
+		const newBtn = btn.cloneNode(true);
+		btn.parentNode.replaceChild(newBtn, btn);
+
+		newBtn.addEventListener('click', () => {
+			document.getElementById('alert-modal').style.display = 'none';
+		});
+	},
+
+	isDataIdentical(current, imported) {
+		if (current.length !== imported.length) return false;
+
+		for (let i = 0; i < current.length; i++) {
+			const a = current[i];
+			const b = imported[i];
+
+			if (a.round !== b.round) return false;
+			if (a.rawPattern !== b.rawPattern) return false;
+			if (a.order !== b.order) return false;
+			if (a.result !== b.result) return false;
+		}
+		return true;
+	},
+
+	applyImportData(name, data) {
+		document.getElementById('trk-project').value = name;
+		State.savedProgress = data;
+		State.savedProgress.sort((a, b) => a.round - b.round);
+		this.renderTable();
+
+		if (State.savedProgress.length > 0) {
+			const max = Math.max(...State.savedProgress.map((x) => x.round));
+			document.getElementById('trk-round').value = max + 1;
+		}
+
+		document.getElementById('file-upload').value = '';
+	},
+
 	checkAndSave() {
 		const roundVal = parseInt(document.getElementById('trk-round').value);
 		const existingIdx = State.savedProgress.findIndex(
@@ -977,9 +1108,10 @@ const Tracker = {
 		});
 	},
 
-	exportExcel() {
+	exportExcel(fileNameOverride = null) {
 		if (State.savedProgress.length === 0) return alert('No data to export');
 		const name =
+			fileNameOverride ||
 			document.getElementById('trk-project').value ||
 			`Astra_Data_${Date.now()}`;
 
@@ -1149,31 +1281,75 @@ const Tracker = {
 		const file = input.files[0];
 		if (!file) return;
 
-		document.getElementById('trk-project').value = file.name.replace(
-			/\.[^/.]+$/,
-			'',
-		);
-
 		const reader = new FileReader();
 		reader.onload = (e) => {
-			const data = new Uint8Array(e.target.result);
-			const wb = XLSX.read(data, { type: 'array' });
-			const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
-				header: 1,
-			});
+			let rows;
+
+			try {
+				const data = new Uint8Array(e.target.result);
+				const wb = XLSX.read(data, { type: 'array' });
+				if (!wb.SheetNames.length) throw new Error('Empty Workbook');
+				rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], {
+					header: 1,
+				});
+			} catch (err) {
+				this.showCustomAlert(
+					'File Error',
+					'Unable to read this file.<br>Please ensure it is a valid .xlsx file.',
+				);
+				input.value = '';
+				return;
+			}
+
+			if (!rows || rows.length < 4) {
+				this.showCustomAlert(
+					'Invalid Data',
+					'The file appears to be empty or missing the required header structure.',
+				);
+				input.value = '';
+				return;
+			}
 
 			const newDat = [];
+			let corruptedRows = 0;
+
 			for (let i = 3; i < rows.length; i++) {
 				const r = rows[i];
 				if (!r[1]) continue;
 
-				const parseC = (v) => (v === 'O' ? '2' : v === '-' ? '1' : '0');
+				const roundNum = parseInt(r[1]);
+				const resultVal = r[15];
 
+				if (isNaN(roundNum) || !resultVal) {
+					corruptedRows++;
+					continue;
+				}
+
+				const rawOrder = [r[3], r[4], r[5], r[6]];
+				const validDigits = ['1', '2', '3', '4'];
+				let isOrderBad = false;
+
+				for (const val of rawOrder) {
+					if (val === null || val === undefined) continue;
+					const s = String(val).trim();
+					if (s === '' || s === '-') continue;
+
+					if (!validDigits.includes(s)) {
+						isOrderBad = true;
+						break;
+					}
+				}
+
+				if (isOrderBad) {
+					corruptedRows++;
+					continue;
+				}
+
+				const parseC = (v) => (v === 'O' ? '2' : v === '-' ? '1' : '0');
 				const c1 = `${parseC(r[7])},${parseC(r[8])}`;
 				const c2 = `${parseC(r[10])},${parseC(r[9])}`;
 				const c3 = `${parseC(r[11])}`;
 				const c4 = `${parseC(r[12])},${parseC(r[13])},${parseC(r[14])}`;
-
 				const rawPattern = `${c1};${c2};${c4};${c3}`;
 
 				let pName = 'Custom';
@@ -1185,40 +1361,71 @@ const Tracker = {
 				}
 
 				let ops = [r[3], r[4], r[5], r[6]];
-
 				ops = ops.map((x) =>
 					x === '-' || x == null || x === '' ? null : x,
 				);
-
 				while (ops.length > 0 && ops[ops.length - 1] === null) {
 					ops.pop();
 				}
-
 				const cleanOrder = ops
 					.map((x) => (x === null ? '?' : x))
 					.join('-');
 
 				newDat.push({
-					round: parseInt(r[1]),
+					round: roundNum,
 					patternName: pName,
 					order: cleanOrder,
-					result: r[15] || 'Failure',
+					result: resultVal,
 					rawPattern: rawPattern,
 				});
 			}
-			State.savedProgress = newDat;
-			State.savedProgress.sort((a, b) => a.round - b.round);
-			this.renderTable();
+
+			if (newDat.length === 0) {
+				this.showCustomAlert(
+					'No Valid Data',
+					'No valid tracker entries found.<br>All rows were either empty or contained invalid data (like "A" in order).',
+				);
+				input.value = '';
+				return;
+			}
+
+			if (corruptedRows > 0) {
+				this.showCustomAlert(
+					'Data Cleanup',
+					`Found and removed <b>${corruptedRows}</b> corrupted rows.<br>(Rows containing invalid characters like 'A' or missing data were skipped).`,
+				);
+			} else {
+				this.showCustomAlert(
+					'Verification Complete',
+					'File data is clean and valid.',
+				);
+			}
+
+			newDat.sort((a, b) => a.round - b.round);
+
+			const currentName = document.getElementById('trk-project').value;
+			const importName = file.name.replace(/\.[^/.]+$/, '');
+
+			const isNameMatch = currentName === importName;
+			const isDataMatch = this.isDataIdentical(
+				State.savedProgress,
+				newDat,
+			);
+
+			if (isNameMatch && isDataMatch) {
+				input.value = '';
+				return;
+			}
 
 			if (State.savedProgress.length > 0) {
-				const max = Math.max(
-					...State.savedProgress.map((x) => x.round),
-				);
-				document.getElementById('trk-round').value = max + 1;
+				State.pendingImport = { name: importName, data: newDat };
+				document.getElementById('import-conflict-modal').style.display =
+					'flex';
+			} else {
+				this.applyImportData(importName, newDat);
 			}
 		};
 		reader.readAsArrayBuffer(file);
-		input.value = '';
 	},
 };
 

@@ -159,6 +159,71 @@
         </div>
     </div>
 
+    <div id="import-conflict-modal" class="modal-overlay">
+        <div class="modal-box" style="width: 400px;">
+            <div class="modal-title">Existing Project Detected</div>
+            <div class="modal-text">
+                You have unsaved progress in the current tracker.<br>
+                What would you like to do?
+            </div>
+            <div class="modal-buttons" style="flex-direction: column; gap: 10px;">
+                <button class="btn-modal" id="btn-conflict-save" style="background: var(--accent-blue); color: white;">
+                    Save Current & Open New
+                </button>
+                <button class="btn-modal" id="btn-conflict-overwrite"
+                    style="background: var(--accent-red); color: white;">
+                    Overwrite (Delete Current)
+                </button>
+                <button class="btn-modal" id="btn-conflict-cancel" style="background: #7f8c8d; color: white;">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="import-confirm-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Are you sure?</div>
+            <div class="modal-text">
+                This will permanently delete your current progress.<br>
+                This action cannot be undone.
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal yes" id="btn-confirm-yes">Yes, Overwrite</button>
+                <button class="btn-modal no" id="btn-confirm-no">No, Go Back</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="save-prompt-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Save Project</div>
+            <div class="modal-text">
+                Please confirm the filename for your export:
+            </div>
+            <div class="form-group" style="margin-bottom: 20px;">
+                <input type="text" id="save-file-name" class="tracker-input"
+                    style="text-align: center; font-weight: bold;">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-save-confirm"
+                    style="background: var(--accent-blue); color: white;">Save & Continue</button>
+                <button class="btn-modal no" id="btn-save-cancel">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="modal-overlay" style="z-index: 9999;">
+        <div class="modal-box">
+            <div class="modal-title" id="alert-title">Notice</div>
+            <div class="modal-text" id="alert-message">Message goes here.</div>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-alert-ok"
+                    style="background: var(--accent-blue); color: white;">OK</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>
