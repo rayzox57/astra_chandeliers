@@ -534,7 +534,8 @@ const GameManager = {
 		Config.Patterns.forEach((pat, idx) => {
 			const parts = pat.split(';');
 			for (let i = 0; i < 4; i++) {
-				const name = `OffPattern ${idx + 1}-${order[i]}`;
+				// CHANGE: Replaced "OffPattern" with "OffLayout"
+				const name = `OffLayout ${idx + 1}-${order[i]}`;
 
 				let pUnlit = [...parts];
 				pUnlit[i] = replacements.unlit[i];
