@@ -475,6 +475,11 @@ img {
 	outline: none;
 }
 
+.tracker-select option {
+	background-color: var(--bg-color);
+	color: var(--text-color);
+}
+
 .tracker-input:focus,
 .tracker-select:focus {
 	border-color: var(--accent-blue);
