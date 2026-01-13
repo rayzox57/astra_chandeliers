@@ -1184,12 +1184,24 @@ const Tracker = {
 					pName = State.offPatterns[rawPattern];
 				}
 
+				let ops = [r[3], r[4], r[5], r[6]];
+
+				ops = ops.map((x) =>
+					x === '-' || x == null || x === '' ? null : x,
+				);
+
+				while (ops.length > 0 && ops[ops.length - 1] === null) {
+					ops.pop();
+				}
+
+				const cleanOrder = ops
+					.map((x) => (x === null ? '?' : x))
+					.join('-');
+
 				newDat.push({
 					round: parseInt(r[1]),
 					patternName: pName,
-					order: `${r[3] || '?'}-${r[4] || '?'}-${r[5] || '?'}-${
-						r[6] || '?'
-					}`,
+					order: cleanOrder,
 					result: r[15] || 'Failure',
 					rawPattern: rawPattern,
 				});
