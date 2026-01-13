@@ -1,8 +1,8 @@
 const Config = {
 	Assets: {
-		chandelier: 'https://i.imgur.com/T6Mt1dp.png',
-		candle_on: 'https://i.imgur.com/gyjwmyB.png',
-		candle_off: 'https://i.imgur.com/0Aa3Xqx.png',
+		chandelier: './public/imgs/chandelier_top_view.png',
+		candle_on: './public/imgs/candle_top_view_light.png',
+		candle_off: './public/imgs/candle_top_view_nolight.png',
 	},
 	GridSize: 5,
 	BaseSize: 1000,
