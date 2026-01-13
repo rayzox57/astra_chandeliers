@@ -635,7 +635,7 @@ img {
 .tracker-table {
 	width: 100%;
 	border-collapse: collapse;
-	font-size: 12px;
+	font-size: 10px;
 	text-align: left;
 }
 
@@ -649,9 +649,10 @@ img {
 }
 
 .tracker-table td {
-	padding: 8px;
+	padding: 4px;
 	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 	color: #eee;
+	white-space: nowrap;
 }
 
 .tracker-table tr:hover {
