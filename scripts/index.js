@@ -1173,14 +1173,24 @@ const Tracker = {
 				const c3 = `${parseC(r[11])}`;
 				const c4 = `${parseC(r[12])},${parseC(r[13])},${parseC(r[14])}`;
 
+				const rawPattern = `${c1};${c2};${c4};${c3}`;
+
+				let pName = 'Custom';
+				const pIdx = Config.Patterns.indexOf(rawPattern);
+				if (pIdx !== -1) {
+					pName = `Layout ${pIdx + 1}`;
+				} else if (State.offPatterns[rawPattern]) {
+					pName = State.offPatterns[rawPattern];
+				}
+
 				newDat.push({
 					round: parseInt(r[1]),
-					patternName: r[2] || 'Custom',
+					patternName: pName,
 					order: `${r[3] || '?'}-${r[4] || '?'}-${r[5] || '?'}-${
 						r[6] || '?'
 					}`,
 					result: r[15] || 'Failure',
-					rawPattern: `${c1};${c2};${c4};${c3}`,
+					rawPattern: rawPattern,
 				});
 			}
 			State.savedProgress = newDat;
