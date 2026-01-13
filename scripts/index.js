@@ -803,6 +803,25 @@ const GameManager = {
 			'border-top: 1px solid rgba(255,255,255,0.2); margin: 5px 0;';
 		menu.appendChild(div);
 
+		const uniqueNames = new Set();
+		Object.values(State.offPatterns).forEach((n) => uniqueNames.add(n));
+
+		uniqueNames.forEach((name) => {
+			const patStr = Object.keys(State.offPatterns).find(
+				(key) => State.offPatterns[key] === name,
+			);
+
+			const btn = document.createElement('button');
+			btn.className = 'pattern-item';
+			btn.textContent = name;
+			btn.style.color = '#e74c3c';
+			btn.onclick = () => {
+				this.applyPattern(patStr);
+				this.clearSolution();
+			};
+			menu.appendChild(btn);
+		});
+
 		const trackerSelect = document.getElementById('trk-layout');
 		trackerSelect.innerHTML = '';
 
@@ -819,9 +838,6 @@ const GameManager = {
 			opt.textContent = `Layout ${i + 1}`;
 			trackerSelect.appendChild(opt);
 		});
-
-		const uniqueNames = new Set();
-		Object.values(State.offPatterns).forEach((n) => uniqueNames.add(n));
 
 		uniqueNames.forEach((name) => {
 			const patStr = Object.keys(State.offPatterns).find(
