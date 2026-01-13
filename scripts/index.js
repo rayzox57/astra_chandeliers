@@ -780,8 +780,14 @@ const GameManager = {
 		const fragment = document.createDocumentFragment();
 
 		for (let i = 0; i < sequence.length - 1; i++) {
-			const start = sequence[i].instance || sequence[i];
-			const end = sequence[i + 1].instance || sequence[i + 1];
+			const item1 = sequence[i];
+			const item2 = sequence[i + 1];
+
+			if (!item1 || !item2) continue;
+
+			const start = item1.instance || item1;
+			const end = item2.instance || item2;
+
 			if (!start || !end) continue;
 
 			const p1 = start.getCenter();
