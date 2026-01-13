@@ -64,7 +64,6 @@ const State = {
 	pendingEntry: null,
 	offPatterns: {},
 	theoryModalAlreadyOpen: false,
-	candlesModalAlreadyOpen: false,
 	pendingImport: null,
 };
 
@@ -372,6 +371,22 @@ const GameManager = {
 				document.getElementById('file-upload').click(),
 			);
 		document
+			.getElementById('btn-reset-tracker')
+			.addEventListener('click', () => Tracker.modalResetTracker());
+
+		document
+			.getElementById('btn-reset-tracker-yes')
+			.addEventListener('click', () => {
+				Tracker.resetTracker();
+			});
+
+		document
+			.getElementById('btn-reset-tracker-no')
+			.addEventListener('click', () => {
+				Tracker.closeModalResetTracker();
+			});
+
+		document
 			.getElementById('file-upload')
 			.addEventListener('change', (e) => Tracker.importExcel(e.target));
 
@@ -475,7 +490,11 @@ const GameManager = {
 			.addEventListener('click', this.closeTheoryModal.bind(this));
 
 		document
-			.getElementById('btn-candles-close')
+			.getElementById('btn-candles-staylocked')
+			.addEventListener('click', this.closeCandlesModal.bind(this, true));
+
+		document
+			.getElementById('btn-candles-continue')
 			.addEventListener('click', this.closeCandlesModal.bind(this));
 
 		document
@@ -568,8 +587,6 @@ const GameManager = {
 	},
 
 	showCandlesModal() {
-		if (State.candlesModalAlreadyOpen) return;
-		State.candlesModalAlreadyOpen = true;
 		const modal = document.getElementById('candles-modal');
 		modal.style.display = 'flex';
 	},
@@ -591,7 +608,11 @@ const GameManager = {
 		}
 	},
 
-	closeCandlesModal() {
+	closeCandlesModal(cancel = false) {
+		if (cancel === true) {
+			State.isLocked = true;
+			this.updateLockUI();
+		}
 		const modal = document.getElementById('candles-modal');
 		modal.style.display = 'none';
 	},
@@ -658,6 +679,17 @@ const GameManager = {
 		const currentStr = this.getCurrentPatternStr();
 		const idx = Config.Patterns.indexOf(currentStr);
 		const display = document.getElementById('pattern-display');
+
+		const trackerSelect = document.getElementById('trk-layout');
+		if (trackerSelect) {
+			if (idx !== -1) {
+				trackerSelect.value = idx;
+			} else if (State.offPatterns[currentStr]) {
+				trackerSelect.value = currentStr;
+			} else {
+				trackerSelect.value = '-1';
+			}
+		}
 
 		this.updateDragConstraints(currentStr);
 
@@ -771,22 +803,49 @@ const GameManager = {
 			'border-top: 1px solid rgba(255,255,255,0.2); margin: 5px 0;';
 		menu.appendChild(div);
 
+		const trackerSelect = document.getElementById('trk-layout');
+		trackerSelect.innerHTML = '';
+
+		const optCustom = document.createElement('option');
+		optCustom.value = '-1';
+		optCustom.textContent = 'Custom Layout';
+		optCustom.hidden = true;
+		optCustom.disabled = true;
+		trackerSelect.appendChild(optCustom);
+
+		Config.Patterns.forEach((pat, i) => {
+			const opt = document.createElement('option');
+			opt.value = i;
+			opt.textContent = `Layout ${i + 1}`;
+			trackerSelect.appendChild(opt);
+		});
+
 		const uniqueNames = new Set();
 		Object.values(State.offPatterns).forEach((n) => uniqueNames.add(n));
 
 		uniqueNames.forEach((name) => {
-			const pat = Object.keys(State.offPatterns).find(
+			const patStr = Object.keys(State.offPatterns).find(
 				(key) => State.offPatterns[key] === name,
 			);
-			const btn = document.createElement('button');
-			btn.className = 'pattern-item';
-			btn.style.color = '#e74c3c';
-			btn.textContent = name;
-			btn.onclick = () => {
-				this.applyPattern(pat);
-				this.clearSolution();
-			};
-			menu.appendChild(btn);
+
+			const opt = document.createElement('option');
+			opt.value = patStr;
+			opt.textContent = name;
+			opt.style.color = '#e74c3c';
+			trackerSelect.appendChild(opt);
+		});
+
+		trackerSelect.addEventListener('change', (e) => {
+			const val = e.target.value;
+
+			if (val === '-1') return;
+
+			if (!isNaN(parseInt(val)) && val.length < 3) {
+				this.applyPattern(Config.Patterns[parseInt(val)]);
+			} else {
+				this.applyPattern(val);
+			}
+			this.clearSolution();
 		});
 	},
 
@@ -920,8 +979,15 @@ const GameManager = {
 };
 
 const Tracker = {
-	showCustomAlert(title, message) {
+	showCustomAlert(title, message, success = false) {
 		document.getElementById('alert-title').textContent = title;
+
+		if (success === true) {
+			document.getElementById('alert-title').classList.add('success');
+		} else {
+			document.getElementById('alert-title').classList.remove('success');
+		}
+
 		document.getElementById('alert-message').innerHTML = message;
 		document.getElementById('alert-modal').style.display = 'flex';
 
@@ -1108,6 +1174,23 @@ const Tracker = {
 		});
 	},
 
+	modalResetTracker() {
+		document.getElementById('reset-tracker-modal').style.display = 'flex';
+	},
+
+	closeModalResetTracker() {
+		document.getElementById('reset-tracker-modal').style.display = 'none';
+	},
+
+	resetTracker() {
+		this.closeModalResetTracker();
+		State.savedProgress = [];
+		this.renderTable();
+		document.getElementById('trk-round').value = 60;
+		document.getElementById('trk-project').value = '';
+		document.getElementById('trk-result').value = 'Failure';
+	},
+
 	exportExcel(fileNameOverride = null) {
 		if (State.savedProgress.length === 0) return alert('No data to export');
 		const name =
@@ -1125,6 +1208,7 @@ const Tracker = {
 			},
 			alignment: { horizontal: 'center', vertical: 'center' },
 		};
+
 		const styleHead = {
 			...styleBase,
 			fill: { fgColor: { rgb: '8497B0' } },
@@ -1134,6 +1218,13 @@ const Tracker = {
 				bold: true,
 				color: { rgb: 'FFFFFF' },
 			},
+		};
+
+		const groupColors = {
+			1: 'E26B0A',
+			2: '963634',
+			3: '948A54',
+			4: '60497A',
 		};
 
 		const data = [];
@@ -1157,7 +1248,8 @@ const Tracker = {
 			'',
 			'RESULT',
 		].map((v, i) => ({ v, s: i > 0 ? styleHead : {} }));
-		const h2 = [
+
+		const h2Labels = [
 			'',
 			'',
 			'',
@@ -1174,28 +1266,62 @@ const Tracker = {
 			'C4 - LB',
 			'C4 - LT',
 			'',
-		].map((v, i) => ({ v, s: i > 0 ? styleHead : {} }));
+		];
+
+		const h2 = h2Labels.map((v, i) => {
+			if (i === 0) return { v, s: {} };
+
+			let s = { ...styleHead };
+
+			if (i >= 7 && i <= 8)
+				s = { ...s, fill: { fgColor: { rgb: groupColors['1'] } } };
+			else if (i >= 9 && i <= 10)
+				s = { ...s, fill: { fgColor: { rgb: groupColors['2'] } } };
+			else if (i === 11)
+				s = { ...s, fill: { fgColor: { rgb: groupColors['3'] } } };
+			else if (i >= 12 && i <= 14)
+				s = { ...s, fill: { fgColor: { rgb: groupColors['4'] } } };
+
+			return { v, s };
+		});
+
 		data.push(h1, h2);
 
 		State.savedProgress.forEach((row) => {
 			const r = [];
 			r.push({ v: '', s: {} });
+
 			r.push({
 				v: row.round,
 				t: 'n',
 				s: { ...styleBase, font: { sz: 20, bold: true } },
 			});
+
 			r.push({
 				v: (row.patternName || '').toUpperCase(),
 				s: { ...styleBase, font: { sz: 14, bold: true } },
 			});
 
 			const ord = row.order.split('-');
-			for (let i = 0; i < 4; i++)
+			for (let i = 0; i < 4; i++) {
+				const val = ord[i] || '-';
+				const bgColor = groupColors[val] || null;
+
 				r.push({
-					v: ord[i] || '-',
-					s: { ...styleBase, font: { sz: 16, bold: true } },
+					v: val,
+					s: {
+						...styleBase,
+						fill: bgColor
+							? { fgColor: { rgb: bgColor } }
+							: undefined,
+						font: {
+							sz: 16,
+							bold: true,
+							color: { rgb: 'FFFFFF' },
+						},
+					},
 				});
+			}
 
 			const grps = row.rawPattern.split(';');
 			const candles = [
@@ -1211,16 +1337,21 @@ const Tracker = {
 					v: '',
 					s: { ...styleBase, fill: { fgColor: { rgb: 'F2F2F2' } } },
 				};
-				if (c === '2')
+				if (c === '2') {
 					cell = {
 						v: 'O',
 						s: {
 							...styleBase,
 							fill: { fgColor: { rgb: 'FFFF00' } },
-							font: { sz: 16, bold: true },
+							font: {
+								sz: 16,
+								bold: true,
+								color: { rgb: '000000' },
+							},
 						},
 					};
-				if (c === '1')
+				}
+				if (c === '1') {
 					cell = {
 						v: '-',
 						s: {
@@ -1233,6 +1364,7 @@ const Tracker = {
 							},
 						},
 					};
+				}
 				r.push(cell);
 			});
 
@@ -1398,6 +1530,7 @@ const Tracker = {
 				this.showCustomAlert(
 					'Verification Complete',
 					'File data is clean and valid.',
+					true,
 				);
 			}
 

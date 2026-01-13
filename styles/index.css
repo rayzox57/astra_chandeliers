@@ -13,6 +13,10 @@
 	--border-color: rgba(255, 255, 255, 0.1);
 }
 
+.hide {
+	display: none !important;
+}
+
 body,
 html {
 	margin: 0;
@@ -316,6 +320,10 @@ img {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+}
+
+#btn-pattern {
+	background: rgba(0, 0, 255, 0.05);
 }
 
 .btn-ui:hover {
@@ -624,6 +632,27 @@ img {
 	background: var(--accent-purple-hover);
 }
 
+.btn-reset-tracker {
+	background: var(--accent-red);
+	color: white;
+	border: none;
+	padding: 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 700;
+	margin-top: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s;
+	width: 100%;
+}
+
+.btn-reset-tracker:hover {
+	background: var(--accent-red-hover);
+}
+
 .tracker-list {
 	flex: 1;
 	overflow-y: auto;
@@ -640,7 +669,7 @@ img {
 }
 
 .tracker-table th {
-	background: rgba(255, 255, 255, 0.1);
+	background: #333;
 	color: #ccc;
 	padding: 8px;
 	position: sticky;
@@ -745,6 +774,10 @@ img {
 .btn-modal.no {
 	background: #7f8c8d;
 	color: white;
+}
+
+#alert-title.success {
+	color: var(--accent-green);
 }
 
 @media (orientation: landscape) {

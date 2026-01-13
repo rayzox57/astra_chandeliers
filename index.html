@@ -37,10 +37,10 @@
         <div class="menu-toggle-btn" id="menu-toggle-btn">Options Menu ▲</div>
         <div id="pattern-display">Select or Click</div>
         <div class="menu-content">
-            <button id="btn-pattern" class="btn-ui">Patterns</button>
-            <button id="btn-lock" class="btn-ui locked">Unlock Candles</button>
-            <button id="btn-solve" class="btn-ui">Theory Solution</button>
+            <button id="btn-pattern" class="btn-ui">Select Patterns</button>
+            <button id="btn-solve" class="btn-ui hide">Theory Solution</button>
             <button id="btn-tracker" class="btn-ui">Progress Tracker</button>
+            <button id="btn-lock" class="btn-ui locked">Unlock Candles</button>
             <button id="btn-reset" class="btn-ui">Reset</button>
         </div>
     </div>
@@ -67,10 +67,16 @@
                 <div class="form-group">
                     <label class="form-label" for="trk-result">Result</label>
                     <select id="trk-result" class="tracker-select">
-                        <option value="Success">Success</option>
                         <option value="Failure">Failure</option>
+                        <option value="Success">Success</option>
                     </select>
                 </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 10px;">
+                <label class="form-label" for="trk-layout">Layout Selection</label>
+                <select id="trk-layout" class="tracker-select">
+                </select>
             </div>
 
             <div class="form-group">
@@ -111,6 +117,9 @@
             </table>
         </div>
 
+        <button class="btn-reset-tracker" id="btn-reset-tracker">
+            Reset
+        </button>
         <button class="btn-export" id="btn-export">
             <span>Export Excel</span>
         </button>
@@ -154,7 +163,21 @@
                 I just add this if later, developers decide to change the default candles position.<br>
             </div>
             <div class="modal-buttons">
-                <button class="btn-modal close" id="btn-candles-close">Close</button>
+                <button class="btn-modal staylocked" id="btn-candles-staylocked">Stay Locked</button>
+                <button class="btn-modal continue" id="btn-candles-continue">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reset-tracker-modal" class="modal-overlay">
+        <div class="modal-box">
+            <div class="modal-title">Reset Tracker</div>
+            <div class="modal-text">
+                Are you sure you want to reset the tracker?
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-modal" id="btn-reset-tracker-yes">Yes</button>
+                <button class="btn-modal" id="btn-reset-tracker-no">No</button>
             </div>
         </div>
     </div>
