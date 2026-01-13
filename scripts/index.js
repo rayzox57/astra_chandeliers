@@ -405,7 +405,9 @@ const GameManager = {
 		draggables.forEach((d) => {
 			d.addEventListener('dragstart', (e) => {
 				e.dataTransfer.setData('text/plain', e.target.id);
+				e.dataTransfer.effectAllowed = 'move';
 			});
+
 			d.addEventListener('click', (e) => {
 				const parent = e.target.parentElement;
 				if (parent.classList.contains('order-pool')) {
@@ -427,20 +429,25 @@ const GameManager = {
 		});
 
 		slots.forEach((s) => {
-			s.addEventListener('dragover', (e) => e.preventDefault());
+			s.addEventListener('dragover', (e) => {
+				e.preventDefault();
+				e.dataTransfer.dropEffect = 'move';
+			});
+
 			s.addEventListener('drop', (e) => {
 				e.preventDefault();
 				const id = e.dataTransfer.getData('text/plain');
 				const el = document.getElementById(id);
 				if (!el) return;
 
+				const originParent = el.parentElement;
+
 				if (s.classList.contains('order-slot')) {
 					if (s.hasChildNodes()) {
 						const existing = s.firstChild;
-						if (existing !== el)
-							document
-								.getElementById('order-pool')
-								.appendChild(existing);
+						if (existing !== el) {
+							originParent.appendChild(existing);
+						}
 					}
 					s.appendChild(el);
 				} else {
