@@ -365,7 +365,7 @@ const GameManager = {
 
 		document
 			.getElementById('btn-export')
-			.addEventListener('click', Tracker.exportExcel);
+			.addEventListener('click', () => Tracker.exportExcel());
 		document
 			.getElementById('btn-import-trigger')
 			.addEventListener('click', () =>
