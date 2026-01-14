@@ -9,6 +9,8 @@
 	--accent-purple-hover: #9b59b6;
 	--accent-red: #c0392b;
 	--accent-red-hover: #e74c3c;
+	--accent-orange: #d35400;
+	--accent-orange-hover: #e67e22;
 	--panel-bg: rgba(20, 20, 20, 0.95);
 	--border-color: rgba(255, 255, 255, 0.1);
 	--rotate-chandelier: 20deg;
@@ -657,6 +659,153 @@ img {
 
 .btn-reset-tracker:hover {
 	background: var(--accent-red-hover);
+}
+
+.btn-share {
+	background: var(--accent-orange);
+	color: white;
+	border: none;
+	padding: 12px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 700;
+	margin-top: 10px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	gap: 8px;
+	transition: all 0.2s;
+	width: 100%;
+}
+
+.btn-share:hover {
+	background: var(--accent-orange-hover);
+	box-shadow: 0 0 15px rgba(211, 84, 0, 0.4);
+}
+
+#share-url-input {
+	width: 100%;
+	background: rgba(0, 0, 0, 0.3);
+	border: 1px solid rgba(255, 255, 255, 0.2);
+	color: #2ecc71;
+	padding: 10px;
+	border-radius: 4px;
+	font-size: 12px;
+	margin-bottom: 15px;
+	box-sizing: border-box;
+	word-break: break-all;
+	outline: none;
+}
+
+.share-input {
+	width: 100%;
+	background: #0f0f0f;
+	border: 1px solid #333;
+	color: #2ecc71;
+	padding: 12px;
+	border-radius: 4px;
+	font-size: 11px;
+	font-family: 'Consolas', 'Monaco', monospace;
+	margin-bottom: 8px;
+	box-sizing: border-box;
+	outline: none;
+	transition: border-color 0.2s;
+}
+
+.share-input:focus {
+	border-color: var(--accent-blue);
+}
+
+.share-actions-row {
+	display: flex;
+	gap: 8px;
+	width: 100%;
+}
+
+.btn-help {
+	background: rgba(255, 255, 255, 0.1);
+	color: #aaa;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	width: 40px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: bold;
+	font-size: 16px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	transition: all 0.2s;
+}
+
+.btn-help:hover {
+	background: rgba(255, 255, 255, 0.2);
+	color: white;
+}
+
+.md-explanation {
+	display: none;
+	background: rgba(88, 101, 242, 0.1);
+	border-left: 3px solid #5865f2;
+	padding: 10px;
+	margin-top: 10px;
+	text-align: left;
+	font-size: 11px;
+	color: #ccc;
+	line-height: 1.4;
+	border-radius: 0 4px 4px 0;
+}
+
+.md-explanation strong {
+	color: #fff;
+}
+
+.btn-discord {
+	background: #5865f2;
+	color: white;
+	border: none;
+	padding: 8px 16px;
+	border-radius: 4px;
+	cursor: pointer;
+	font-weight: 700;
+	margin-top: 5px;
+	width: 100%;
+	transition: background 0.2s;
+}
+
+.btn-discord:hover {
+	background: #4752c4;
+}
+
+.modal-separator {
+	height: 1px;
+	background: rgba(255, 255, 255, 0.1);
+	margin: 15px 0;
+	width: 100%;
+}
+
+.url-status-box {
+	font-size: 11px;
+	margin-top: 8px;
+	padding: 6px;
+	border-radius: 4px;
+	background: rgba(0, 0, 0, 0.2);
+	font-weight: 600;
+	transition: all 0.3s;
+}
+
+.url-status-safe {
+	color: var(--accent-green);
+	border: 1px solid var(--accent-green);
+}
+
+.url-status-warning {
+	color: var(--accent-orange);
+	border: 1px solid var(--accent-orange);
+}
+
+.url-status-danger {
+	color: var(--accent-red);
+	border: 1px solid var(--accent-red);
 }
 
 .tracker-list {

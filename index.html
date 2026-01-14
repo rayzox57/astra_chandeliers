@@ -25,6 +25,7 @@
     <meta property="twitter:image" content="https://rayzox57.github.io/astra_chandeliers/public/meta/card.png" />
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
     <link rel="stylesheet" href="styles/index.css">
     <script src="scripts/index.js" defer></script>
 
@@ -81,8 +82,12 @@
 
         <div class="tracker-form">
             <div class="form-group" style="margin-bottom: 10px;">
-                <label class="form-label" for="trk-project">Project Name (File Name)</label>
-                <input type="text" id="trk-project" class="tracker-input" placeholder="Astra_Tracker_Project">
+                <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+                    <label class="form-label" for="trk-project">Project Name</label>
+                    <span id="name-counter" style="font-size:10px; color:#aaa;"></span>
+                </div>
+                <input type="text" id="trk-project" class="tracker-input" maxlength="21"
+                    placeholder="Astra_Tracker_Project">
             </div>
 
             <div class="form-row">
@@ -145,6 +150,9 @@
 
         <button class="btn-reset-tracker" id="btn-reset-tracker">
             Reset
+        </button>
+        <button class="btn-share" id="btn-share-trigger">
+            <span>Share Track Url [Beta]</span>
         </button>
         <button class="btn-export" id="btn-export">
             <span>Export Excel</span>
@@ -269,6 +277,46 @@
             <div class="modal-buttons">
                 <button class="btn-modal" id="btn-alert-ok"
                     style="background: var(--accent-blue); color: white;">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="share-modal" class="modal-overlay" style="z-index: 9999;">
+        <div class="modal-box" style="width: 380px;">
+            <div class="modal-title" style="color:var(--accent-orange-hover);">Share Track URL</div>
+
+            <div class="modal-text"
+                style="text-align:left; margin-bottom:5px; font-size:11px; color:#aaa; font-weight:700;">RAW URL</div>
+            <input type="text" id="share-url-input" class="share-input" readonly onclick="this.select()">
+            <button class="btn-modal" id="btn-share-copy"
+                style="background: var(--accent-blue); color: white; width:100%; padding:8px; font-size:12px;">Copy URL
+                to Clipboard</button>
+
+            <div id="url-status" class="url-status-box"></div>
+
+            <div class="modal-separator"></div>
+
+            <div class="modal-text"
+                style="text-align:left; margin-bottom:5px; font-size:11px; color:#aaa; font-weight:700;">DISCORD FORMAT
+            </div>
+            <input type="text" id="share-markdown-input" class="share-input" readonly onclick="this.select()">
+
+            <div class="share-actions-row">
+                <button class="btn-discord" id="btn-share-markdown" style="margin-top:0; font-size:12px;">Copy Discord
+                    Markdown</button>
+                <button class="btn-help" id="btn-md-help" title="What is this?">?</button>
+            </div>
+
+            <div id="md-explanation" class="md-explanation">
+                <strong>What is Markdown?</strong><br>
+                It is a way to create a clean, clickable link instead of pasting a massive URL.<br><br>
+                <strong>Why use it?</strong><br>
+                Since the generated URL is very long, pasting it directly into Discord looks messy and "scary" to click.
+                Using this format hides the code behind a nice title like <em>[My Project Name]</em>.
+            </div>
+
+            <div style="margin-top:20px; text-align:center;">
+                <button class="btn-modal no" id="btn-share-close">Close</button>
             </div>
         </div>
     </div>

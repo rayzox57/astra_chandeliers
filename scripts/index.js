@@ -190,6 +190,7 @@ class Chandelier {
 
 		const aspectBox = document.createElement('div');
 		aspectBox.className = 'chandelier-aspect-box';
+
 		wrapper.appendChild(aspectBox);
 
 		const bg = document.createElement('img');
@@ -271,6 +272,7 @@ const GameManager = {
 		this.setupEventListeners();
 		this.checkCurrentPattern();
 		this.updateLockUI();
+		Tracker.checkUrlImport();
 	},
 
 	renderGrid() {
@@ -370,6 +372,50 @@ const GameManager = {
 			.addEventListener('click', () =>
 				document.getElementById('file-upload').click(),
 			);
+
+		document
+			.getElementById('btn-share-trigger')
+			.addEventListener('click', () => Tracker.generateShareUrl());
+
+		document
+			.getElementById('btn-share-copy')
+			.addEventListener('click', () => {
+				const input = document.getElementById('share-url-input');
+				input.select();
+				document.execCommand('copy');
+				const btn = document.getElementById('btn-share-copy');
+				const originalText = btn.textContent;
+				btn.textContent = 'Copied!';
+				setTimeout(() => (btn.textContent = originalText), 1500);
+			});
+
+		document
+			.getElementById('btn-share-markdown')
+			.addEventListener('click', () => {
+				const input = document.getElementById('share-markdown-input');
+				input.select();
+				document.execCommand('copy');
+				const btn = document.getElementById('btn-share-markdown');
+				const originalText = btn.textContent;
+				btn.textContent = 'Copied!';
+				setTimeout(() => (btn.textContent = originalText), 1500);
+			});
+
+		document.getElementById('btn-md-help').addEventListener('click', () => {
+			const box = document.getElementById('md-explanation');
+			if (box.style.display === 'block') {
+				box.style.display = 'none';
+			} else {
+				box.style.display = 'block';
+			}
+		});
+
+		document
+			.getElementById('btn-share-close')
+			.addEventListener('click', () => {
+				document.getElementById('share-modal').style.display = 'none';
+			});
+
 		document
 			.getElementById('btn-reset-tracker')
 			.addEventListener('click', () => Tracker.modalResetTracker());
@@ -504,6 +550,27 @@ const GameManager = {
 			});
 
 		this.setupDragDrop();
+
+		const nameInput = document.getElementById('trk-project');
+		const nameCounter = document.getElementById('name-counter');
+		const defaultName = 'Astra_Tracker_Project';
+
+		nameInput.value = defaultName;
+		const maxLen = nameInput.getAttribute('maxlength');
+
+		const updateCounter = () => {
+			const current = nameInput.value.length;
+			const remaining = maxLen - current;
+			nameCounter.textContent = `${remaining} chars left`;
+			nameCounter.style.color = remaining < 5 ? '#e74c3c' : '#aaa';
+		};
+
+		nameInput.addEventListener('input', (e) => {
+			e.target.value = e.target.value.replace(/[^a-zA-Z0-9_\-]/g, '');
+			updateCounter();
+		});
+
+		updateCounter();
 	},
 
 	setupDragDrop() {
@@ -1043,6 +1110,7 @@ const Tracker = {
 		}
 
 		document.getElementById('file-upload').value = '';
+		document.getElementById('tracker-panel').classList.add('open');
 	},
 
 	checkAndSave() {
@@ -1207,12 +1275,139 @@ const Tracker = {
 		document.getElementById('trk-result').value = 'Failure';
 	},
 
+	generateShareUrl() {
+		if (State.savedProgress.length === 0) {
+			this.showCustomAlert(
+				'Empty Tracker',
+				'There is no data to share yet.',
+			);
+			return;
+		}
+
+		const projName =
+			document.getElementById('trk-project').value ||
+			'Astra_Tracker_Project';
+
+		const optimizedData = {
+			h: projName,
+			d: State.savedProgress.map((p) => {
+				let patVal = Config.Patterns.indexOf(p.rawPattern);
+				if (patVal === -1) patVal = p.rawPattern;
+				const resVal = p.result === 'Success' ? 1 : 0;
+				return [p.round, patVal, p.order, resVal];
+			}),
+		};
+
+		try {
+			const jsonStr = JSON.stringify(optimizedData);
+			const compressed = LZString.compressToEncodedURIComponent(jsonStr);
+
+			const currentUrl = window.location.href.split('?')[0];
+			const shareUrl = `${currentUrl}?track=${compressed}`;
+
+			document.getElementById('share-url-input').value = shareUrl;
+
+			const mdString = `[ My Astra Chandelier Track : ${projName} ](${shareUrl})`;
+			document.getElementById('share-markdown-input').value = mdString;
+
+			const urlLen = shareUrl.length;
+			const statusBox = document.getElementById('url-status');
+
+			if (urlLen < 2000) {
+				statusBox.textContent = `URL Length: ${urlLen} chars (Safe)`;
+				statusBox.className = 'url-status-box url-status-safe';
+			} else if (urlLen < 4000) {
+				statusBox.textContent = `URL Length: ${urlLen} chars (Warning: Might be truncated)`;
+				statusBox.className = 'url-status-box url-status-warning';
+			} else {
+				statusBox.textContent = `URL Length: ${urlLen} chars (Danger: Too Long)`;
+				statusBox.className = 'url-status-box url-status-danger';
+			}
+
+			document.getElementById('share-modal').style.display = 'flex';
+		} catch (e) {
+			this.showCustomAlert('Error', 'Failed to generate share URL.');
+		}
+	},
+
+	checkUrlImport() {
+		const params = new URLSearchParams(window.location.search);
+		if (!params.has('track')) return;
+
+		const compressed = params.get('track');
+		if (!compressed) return;
+
+		try {
+			const jsonStr =
+				LZString.decompressFromEncodedURIComponent(compressed);
+			if (!jsonStr) throw new Error('Decompression failed');
+
+			const payload = JSON.parse(jsonStr);
+			if (!payload.d || !Array.isArray(payload.d))
+				throw new Error('Invalid Format');
+
+			const restoredData = [];
+
+			payload.d.forEach((row) => {
+				let [round, patRaw, order, resRaw] = row;
+				let rawPattern = patRaw;
+				if (typeof patRaw === 'number') {
+					rawPattern = Config.Patterns[patRaw];
+				}
+
+				let result = 'Failure';
+				if (typeof resRaw === 'number') {
+					result = resRaw === 1 ? 'Success' : 'Failure';
+				} else {
+					result = resRaw;
+				}
+
+				if (typeof round !== 'number')
+					throw new Error('Corrupted Data');
+				if (!rawPattern) throw new Error('Corrupted Data');
+
+				let pName = 'Custom';
+				const pIdx = Config.Patterns.indexOf(rawPattern);
+				if (pIdx !== -1) {
+					pName = `Layout ${pIdx + 1}`;
+				} else if (State.offPatterns[rawPattern]) {
+					pName = State.offPatterns[rawPattern];
+				}
+
+				restoredData.push({
+					round: round,
+					patternName: pName,
+					rawPattern: rawPattern,
+					order: order,
+					result: result,
+				});
+			});
+
+			this.applyImportData(payload.h || '', restoredData);
+
+			const newUrl = window.location.href.split('?')[0];
+			window.history.replaceState({}, document.title, newUrl);
+
+			this.showCustomAlert(
+				'Track Loaded',
+				'Shared track data has been successfully loaded.',
+				true,
+			);
+		} catch (e) {
+			console.error(e);
+			this.showCustomAlert(
+				'Import Error',
+				'The shared link appears to be invalid or corrupted.',
+			);
+		}
+	},
+
 	exportExcel(fileNameOverride = null) {
 		if (State.savedProgress.length === 0) return alert('No data to export');
 		const name =
 			fileNameOverride ||
 			document.getElementById('trk-project').value ||
-			`Astra_Data_${Date.now()}`;
+			'Astra_Tracker_Project';
 
 		const styleBase = {
 			font: { name: 'Calibri', sz: 11 },
@@ -1552,7 +1747,9 @@ const Tracker = {
 
 			newDat.sort((a, b) => a.round - b.round);
 
-			const currentName = document.getElementById('trk-project').value;
+			const currentName =
+				document.getElementById('trk-project').value ||
+				'Astra_Tracker_Project';
 			const importName = file.name.replace(/\.[^/.]+$/, '');
 
 			const isNameMatch = currentName === importName;
