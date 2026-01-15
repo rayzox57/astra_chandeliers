@@ -67,23 +67,20 @@ const State = {
 	pendingImport: null,
 };
 
-// --- MOBILE CAMERA MANAGER ---
 const MobileManager = {
-	currentView: 0, // 0:TL, 1:TR, 2:BL, 3:BR
-	isZoomedIn: true, // CORRECTION : On commence ZOOMÉ (Focus) par défaut
+	currentView: 0,
+	isZoomedIn: true,
 
 	views: [
-		{ x: -10, y: -10, id: 'Top-Left (1)' }, // 0
-		{ x: -50, y: -10, id: 'Top-Right (2)' }, // 1
-		{ x: -10, y: -50, id: 'Bot-Left (4)' }, // 2
-		{ x: -50, y: -50, id: 'Bot-Right (3)' }, // 3
+		{ x: -10, y: -10, id: 'Top-Left (1)' },
+		{ x: -50, y: -10, id: 'Top-Right (2)' },
+		{ x: -10, y: -50, id: 'Bot-Left (4)' },
+		{ x: -50, y: -50, id: 'Bot-Right (3)' },
 	],
 
 	init() {
-		// CORRECTION : On force l'état initial zoomé
 		this.isZoomedIn = true;
 
-		// On met à jour l'icône tout de suite
 		const btn = document.getElementById('nav-zoom-toggle');
 		if (btn) btn.textContent = '🔍';
 
@@ -122,16 +119,12 @@ const MobileManager = {
 			if (this.currentView === 0) next = 1;
 			if (this.currentView === 2) next = 3;
 		} else if (direction === 'dr') {
-			// Down-Right (TL -> BR)
 			if (this.currentView === 0) next = 3;
 		} else if (direction === 'dl') {
-			// Down-Left (TR -> BL)
 			if (this.currentView === 1) next = 2;
 		} else if (direction === 'ur') {
-			// Up-Right (BL -> TR)
 			if (this.currentView === 2) next = 1;
 		} else if (direction === 'ul') {
-			// Up-Left (BR -> TL)
 			if (this.currentView === 3) next = 0;
 		}
 
@@ -144,14 +137,8 @@ const MobileManager = {
 
 	toggleZoom() {
 		this.isZoomedIn = !this.isZoomedIn;
-
 		const btn = document.getElementById('nav-zoom-toggle');
-		// Si on est zoomé, le bouton propose de dézoomer (Télescope/Vue large)
-		// Si on est dézoomé, le bouton propose de zoomer (Loupe)
-		btn.textContent = this.isZoomedIn ? '🔭' : '🔍'; // Icônes inversées pour la logique "action à faire"
-
-		// Ou si vous préférez l'icône de l'état actuel :
-		// btn.textContent = this.isZoomedIn ? '🔍' : '🔭';
+		btn.textContent = this.isZoomedIn ? '🔭' : '🔍';
 
 		this.updateCamera();
 		this.updateNavButtons();
@@ -161,10 +148,8 @@ const MobileManager = {
 		const world = document.getElementById('game-world');
 
 		if (!this.isZoomedIn) {
-			// Vue d'ensemble
 			world.style.transform = `scale(0.4) translate(0%, 0%)`;
 		} else {
-			// Vue Focus
 			const pos = this.views[this.currentView];
 			world.style.transform = `scale(1.0) translate(${pos.x}%, ${pos.y}%)`;
 		}
@@ -173,15 +158,13 @@ const MobileManager = {
 	updateNavButtons() {
 		const dPad = document.getElementById('d-pad');
 
-		// CORRECTION : On utilise la classe CSS pour cacher les flèches uniquement
 		if (!this.isZoomedIn) {
 			dPad.classList.add('overview-mode');
-			return; // On arrête ici, pas besoin de calculer quelles flèches cacher, elles le sont toutes
+			return;
 		}
 
 		dPad.classList.remove('overview-mode');
 
-		// Logique de masquage des flèches inaccessibles (Bords de map)
 		const btns = {
 			up: document.getElementById('nav-up'),
 			down: document.getElementById('nav-down'),
@@ -196,28 +179,24 @@ const MobileManager = {
 		Object.values(btns).forEach((b) => b && b.classList.remove('hidden'));
 
 		if (this.currentView === 0) {
-			// TL
 			btns.up.classList.add('hidden');
 			btns.left.classList.add('hidden');
 			btns.ul.classList.add('hidden');
 			btns.ur.classList.add('hidden');
 			btns.dl.classList.add('hidden');
 		} else if (this.currentView === 1) {
-			// TR
 			btns.up.classList.add('hidden');
 			btns.right.classList.add('hidden');
 			btns.ul.classList.add('hidden');
 			btns.ur.classList.add('hidden');
 			btns.dr.classList.add('hidden');
 		} else if (this.currentView === 2) {
-			// BL
 			btns.down.classList.add('hidden');
 			btns.left.classList.add('hidden');
 			btns.ul.classList.add('hidden');
 			btns.dl.classList.add('hidden');
 			btns.dr.classList.add('hidden');
 		} else if (this.currentView === 3) {
-			// BR
 			btns.down.classList.add('hidden');
 			btns.right.classList.add('hidden');
 			btns.ur.classList.add('hidden');
@@ -433,8 +412,6 @@ const GameManager = {
 		this.checkCurrentPattern();
 		this.updateLockUI();
 		Tracker.checkUrlImport();
-
-		// Init Mobile View
 		MobileManager.init();
 	},
 
@@ -501,6 +478,18 @@ const GameManager = {
 		document
 			.getElementById('btn-reset')
 			.addEventListener('click', this.resetGame.bind(this));
+		document.getElementById('btn-credits').addEventListener('click', () => {
+			document.getElementById('credits-modal').style.display = 'flex';
+			document.getElementById('bottom-menu').classList.remove('open');
+			document.getElementById('menu-toggle-btn').textContent =
+				'Options Menu ▲';
+		});
+
+		document
+			.getElementById('btn-credits-close')
+			.addEventListener('click', () => {
+				document.getElementById('credits-modal').style.display = 'none';
+			});
 		document
 			.getElementById('btn-save-entry')
 			.addEventListener('click', Tracker.checkAndSave.bind(Tracker));
@@ -683,9 +672,6 @@ const GameManager = {
 				document.getElementById('import-conflict-modal').style.display =
 					'flex';
 			});
-		document
-			.getElementById('file-upload')
-			.addEventListener('change', (e) => Tracker.importExcel(e.target));
 
 		document
 			.getElementById('btn-overwrite-yes')
@@ -735,7 +721,6 @@ const GameManager = {
 
 		updateCounter();
 
-		// --- MOBILE NAV LISTENERS ---
 		document
 			.getElementById('nav-up')
 			.addEventListener('click', () => MobileManager.move('up'));
@@ -749,7 +734,6 @@ const GameManager = {
 			.getElementById('nav-right')
 			.addEventListener('click', () => MobileManager.move('right'));
 
-		// Nouvelles Diagonales
 		document
 			.getElementById('nav-ul')
 			.addEventListener('click', () => MobileManager.move('ul'));
@@ -763,7 +747,6 @@ const GameManager = {
 			.getElementById('nav-dr')
 			.addEventListener('click', () => MobileManager.move('dr'));
 
-		// Zoom Toggle
 		document
 			.getElementById('nav-zoom-toggle')
 			.addEventListener('click', () => MobileManager.toggleZoom());
@@ -1212,12 +1195,9 @@ const GameManager = {
 		const svg = document.getElementById('arrow-layer');
 		const fragment = document.createDocumentFragment();
 
-		// FIX: We need coordinates relative to the #game-world container.
 		const worldRect = document
 			.getElementById('game-world')
 			.getBoundingClientRect();
-		const scaleX =
-			worldRect.width / document.getElementById('game-world').offsetWidth;
 
 		for (let i = 0; i < sequence.length - 1; i++) {
 			const item1 = sequence[i];
@@ -1230,13 +1210,9 @@ const GameManager = {
 
 			if (!start || !end) continue;
 
-			// Get rectangles
 			const r1 = start.dom.aspectBox.getBoundingClientRect();
 			const r2 = end.dom.aspectBox.getBoundingClientRect();
 
-			// Calculate center relative to worldRect
-			// This works regardless of the 'translate' on the world,
-			// because both the arrow-layer and the chandeliers are inside it.
 			const p1 = {
 				x: r1.left - worldRect.left + r1.width / 2,
 				y: r1.top - worldRect.top + r1.height / 2,
@@ -1618,7 +1594,7 @@ const Tracker = {
 	},
 
 	exportExcel(fileNameOverride = null) {
-		if (State.savedProgress.length === 0) return alert('No data to export');
+		if (State.savedProgress.length === 0) return;
 		const name =
 			fileNameOverride ||
 			document.getElementById('trk-project').value ||
@@ -1696,9 +1672,7 @@ const Tracker = {
 
 		const h2 = h2Labels.map((v, i) => {
 			if (i === 0) return { v, s: {} };
-
 			let s = { ...styleHead };
-
 			if (i >= 7 && i <= 8)
 				s = { ...s, fill: { fgColor: { rgb: groupColors['1'] } } };
 			else if (i >= 9 && i <= 10)
@@ -1707,7 +1681,6 @@ const Tracker = {
 				s = { ...s, fill: { fgColor: { rgb: groupColors['3'] } } };
 			else if (i >= 12 && i <= 14)
 				s = { ...s, fill: { fgColor: { rgb: groupColors['4'] } } };
-
 			return { v, s };
 		});
 
@@ -1827,7 +1800,6 @@ const Tracker = {
 		const heights = [{ hpx: 12 }, { hpx: 21 }, { hpx: 21 }];
 		State.savedProgress.forEach(() => heights.push({ hpx: 40 }));
 		ws['!rows'] = heights;
-
 		ws['!views'] = [{ showGridLines: false, showRowColHeaders: false }];
 
 		const wb = XLSX.utils.book_new();

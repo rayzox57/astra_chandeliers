@@ -40,7 +40,6 @@ img {
 	pointer-events: none;
 }
 
-/* --- GAME WORLD & CAMERA (Wrapper) --- */
 #camera-frame {
 	position: absolute;
 	top: 0;
@@ -48,7 +47,7 @@ img {
 	width: 100vw;
 	height: 100vh;
 	overflow: hidden;
-	z-index: 0; /* Base layer */
+	z-index: 0;
 }
 
 #game-world {
@@ -82,12 +81,10 @@ img {
 	overflow: visible;
 }
 
-/* --- BOUTONS ET NAVIGATION MOBILE (Cachés par défaut sur Desktop) --- */
 #mobile-nav {
-	display: none !important; /* Force hide on Desktop */
+	display: none !important;
 }
 
-/* --- ELEMENTS GRILLE --- */
 .grid-cell {
 	position: relative;
 	display: flex;
@@ -257,12 +254,11 @@ img {
 	opacity: 0.8;
 }
 
-/* --- BOTTOM MENU (Desktop Default) --- */
 #bottom-menu {
 	position: fixed;
 	bottom: 30px;
 	left: 30px;
-	z-index: 1000; /* High Z-index to stay on top */
+	z-index: 1000;
 	display: flex;
 	flex-direction: column-reverse;
 	align-items: center;
@@ -406,6 +402,17 @@ img {
 	color: #fff;
 }
 
+#btn-credits {
+	border-color: rgba(26, 188, 156, 0.5);
+	color: #a3e4d7;
+	background: rgba(26, 188, 156, 0.2);
+}
+
+#btn-credits:hover {
+	background: rgba(26, 188, 156, 0.4);
+	color: #fff;
+}
+
 #pattern-menu {
 	position: fixed;
 	bottom: 40px;
@@ -446,7 +453,6 @@ img {
 	color: white;
 }
 
-/* --- TRACKER PANEL (Desktop Default) --- */
 #tracker-panel {
 	position: fixed;
 	top: 20px;
@@ -990,10 +996,6 @@ img {
 	display: none !important;
 }
 
-/* =========================================
-   MEDIA QUERY: DESKTOP (> 768px)
-   FORCE RESET DES STYLES MOBILES
-   ========================================= */
 @media (min-width: 769px) {
 	#game-world {
 		transform: none !important;
@@ -1005,14 +1007,9 @@ img {
 	}
 }
 
-/* =========================================
-   MEDIA QUERY: MOBILE (<= 768px)
-   UNIQUEMENT ICI : STYLES MOBILES
-   ========================================= */
 @media (max-width: 768px) {
-	/* -- Navigation Wrapper -- */
 	#mobile-nav {
-		display: flex !important; /* Force l'affichage uniquement sur mobile */
+		display: flex !important;
 		flex-direction: column;
 		align-items: center;
 		justify-content: flex-end;
@@ -1027,7 +1024,6 @@ img {
 		box-sizing: border-box;
 	}
 
-	/* -- D-PAD (Grid 3x3) -- */
 	.d-pad {
 		display: grid;
 		grid-template-columns: repeat(3, auto);
@@ -1037,21 +1033,18 @@ img {
 		justify-items: center;
 		pointer-events: auto;
 		transition: opacity 0.3s;
-
 		background: rgba(0, 0, 0, 0.3);
 		padding: 15px;
 		border-radius: 50%;
 		backdrop-filter: blur(2px);
 	}
 
-	/* Cache les flèches en mode Overview */
 	.d-pad.overview-mode .nav-cardinal,
 	.d-pad.overview-mode .nav-diag {
 		opacity: 0;
 		pointer-events: none;
 	}
 
-	/* -- Flèches -- */
 	.nav-arrow {
 		width: 50px;
 		height: 50px;
@@ -1070,7 +1063,6 @@ img {
 		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 	}
 
-	/* Bouton Zoom (Centre) */
 	.zoom-btn {
 		background: var(--accent-blue);
 		border-color: rgba(255, 255, 255, 0.4);
@@ -1078,7 +1070,6 @@ img {
 		z-index: 10;
 	}
 
-	/* Diagonales (légère différence) */
 	.nav-diag {
 		background: rgba(255, 255, 255, 0.05);
 		font-size: 16px;
@@ -1089,7 +1080,6 @@ img {
 		background: rgba(255, 255, 255, 0.3);
 	}
 
-	/* Rotation des diagonales */
 	#nav-ul {
 		transform: rotate(-45deg);
 	}
@@ -1118,20 +1108,17 @@ img {
 		transform: rotate(135deg) scale(0.9);
 	}
 
-	/* Helper pour cacher les boutons inutiles */
 	.nav-arrow.hidden {
 		opacity: 0;
 		pointer-events: none;
 	}
 
-	/* -- Game World Zoomé -- */
 	#game-world {
 		width: 250vw;
 		height: 250vh;
 		transform-origin: 0 0;
 	}
 
-	/* -- Tracker Panel Plein Écran -- */
 	#tracker-panel {
 		position: fixed;
 		top: 0;
