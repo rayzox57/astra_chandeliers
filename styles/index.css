@@ -40,23 +40,35 @@ img {
 	pointer-events: none;
 }
 
-#grid-container {
-	display: grid;
+/* --- GAME WORLD & CAMERA (Wrapper) --- */
+#camera-frame {
+	position: absolute;
+	top: 0;
+	left: 0;
 	width: 100vw;
 	height: 100vh;
+	overflow: hidden;
+	z-index: 0; /* Base layer */
+}
+
+#game-world {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	transform-origin: 0 0;
+	transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#grid-container {
+	display: grid;
+	width: 100%;
+	height: 100%;
 	grid-template-columns: repeat(5, 1fr);
 	grid-template-rows: repeat(5, 1fr);
 	position: relative;
 	z-index: 1;
-}
-
-.grid-cell {
-	position: relative;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	overflow: visible;
-	z-index: 2;
 }
 
 #arrow-layer {
@@ -68,6 +80,21 @@ img {
 	pointer-events: none;
 	z-index: 50;
 	overflow: visible;
+}
+
+/* --- BOUTONS ET NAVIGATION MOBILE (Cachés par défaut sur Desktop) --- */
+#mobile-nav {
+	display: none !important; /* Force hide on Desktop */
+}
+
+/* --- ELEMENTS GRILLE --- */
+.grid-cell {
+	position: relative;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	overflow: visible;
+	z-index: 2;
 }
 
 .solution-arrow {
@@ -126,7 +153,6 @@ img {
 	position: relative;
 	aspect-ratio: 1 / 1;
 	margin: auto;
-	/*transform: rotate(30deg);*/
 	transform: rotate(var(--rotate-chandelier));
 }
 
@@ -141,8 +167,7 @@ img {
 	position: absolute;
 	top: 40%;
 	left: 50%;
-	transform: translate(-50%, -50%) /*rotate(-30deg)*/
-		rotate(var(--rotate-chandelier-comp));
+	transform: translate(-50%, -50%) rotate(var(--rotate-chandelier-comp));
 	color: rgba(255, 255, 255, 0.9);
 	font-size: 48px;
 	font-weight: 800;
@@ -232,11 +257,12 @@ img {
 	opacity: 0.8;
 }
 
+/* --- BOTTOM MENU (Desktop Default) --- */
 #bottom-menu {
 	position: fixed;
 	bottom: 30px;
 	left: 30px;
-	z-index: 1000;
+	z-index: 1000; /* High Z-index to stay on top */
 	display: flex;
 	flex-direction: column-reverse;
 	align-items: center;
@@ -420,6 +446,7 @@ img {
 	color: white;
 }
 
+/* --- TRACKER PANEL (Desktop Default) --- */
 #tracker-panel {
 	position: fixed;
 	top: 20px;
@@ -428,13 +455,13 @@ img {
 	bottom: 20px;
 	background: var(--panel-bg);
 	border-left: 1px solid rgba(255, 255, 255, 0.2);
+	box-shadow: -5px 0 20px rgba(0, 0, 0, 0.7);
+	backdrop-filter: blur(10px);
 	z-index: 2000;
 	transition: right 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 	display: flex;
 	flex-direction: column;
 	padding: 20px;
-	box-shadow: -5px 0 20px rgba(0, 0, 0, 0.7);
-	backdrop-filter: blur(10px);
 }
 
 #tracker-panel.open {
@@ -960,47 +987,188 @@ img {
 }
 
 #mobile-warning {
-	display: none;
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background: #1a1a1a;
-	z-index: 99999;
-	color: #fff;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	padding: 40px;
-	text-align: center;
-	box-sizing: border-box;
+	display: none !important;
 }
 
-#mobile-warning h1 {
-	font-size: 24px;
-	margin-bottom: 20px;
-	color: var(--accent-red-hover);
-}
-
-#mobile-warning p {
-	font-size: 16px;
-	line-height: 1.6;
-	max-width: 600px;
-	color: #ccc;
-}
-
-@media (max-width: 768px) {
-	#mobile-warning {
-		display: flex;
+/* =========================================
+   MEDIA QUERY: DESKTOP (> 768px)
+   FORCE RESET DES STYLES MOBILES
+   ========================================= */
+@media (min-width: 769px) {
+	#game-world {
+		transform: none !important;
+		width: 100% !important;
+		height: 100% !important;
 	}
-	#grid-container,
-	#bottom-menu,
-	#arrow-layer,
-	#tracker-panel,
-	#pattern-display,
-	#pattern-menu,
-	.modal-overlay {
+	#mobile-nav {
 		display: none !important;
+	}
+}
+
+/* =========================================
+   MEDIA QUERY: MOBILE (<= 768px)
+   UNIQUEMENT ICI : STYLES MOBILES
+   ========================================= */
+@media (max-width: 768px) {
+	/* -- Navigation Wrapper -- */
+	#mobile-nav {
+		display: flex !important; /* Force l'affichage uniquement sur mobile */
+		flex-direction: column;
+		align-items: center;
+		justify-content: flex-end;
+		position: fixed;
+		bottom: 30px;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		z-index: 2000;
+		pointer-events: none;
+		padding-bottom: 40px;
+		box-sizing: border-box;
+	}
+
+	/* -- D-PAD (Grid 3x3) -- */
+	.d-pad {
+		display: grid;
+		grid-template-columns: repeat(3, auto);
+		grid-template-rows: repeat(3, auto);
+		gap: 12px;
+		align-items: center;
+		justify-items: center;
+		pointer-events: auto;
+		transition: opacity 0.3s;
+
+		background: rgba(0, 0, 0, 0.3);
+		padding: 15px;
+		border-radius: 50%;
+		backdrop-filter: blur(2px);
+	}
+
+	/* Cache les flèches en mode Overview */
+	.d-pad.overview-mode .nav-cardinal,
+	.d-pad.overview-mode .nav-diag {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	/* -- Flèches -- */
+	.nav-arrow {
+		width: 50px;
+		height: 50px;
+		background: rgba(255, 255, 255, 0.1);
+		border: 1px solid rgba(255, 255, 255, 0.2);
+		color: white;
+		border-radius: 50%;
+		font-size: 20px;
+		cursor: pointer;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		backdrop-filter: blur(5px);
+		transition: all 0.2s ease;
+		-webkit-tap-highlight-color: transparent;
+		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+	}
+
+	/* Bouton Zoom (Centre) */
+	.zoom-btn {
+		background: var(--accent-blue);
+		border-color: rgba(255, 255, 255, 0.4);
+		font-size: 22px;
+		z-index: 10;
+	}
+
+	/* Diagonales (légère différence) */
+	.nav-diag {
+		background: rgba(255, 255, 255, 0.05);
+		font-size: 16px;
+	}
+
+	.nav-arrow:active {
+		transform: scale(0.9);
+		background: rgba(255, 255, 255, 0.3);
+	}
+
+	/* Rotation des diagonales */
+	#nav-ul {
+		transform: rotate(-45deg);
+	}
+	#nav-ul:active {
+		transform: rotate(-45deg) scale(0.9);
+	}
+
+	#nav-ur {
+		transform: rotate(45deg);
+	}
+	#nav-ur:active {
+		transform: rotate(45deg) scale(0.9);
+	}
+
+	#nav-dl {
+		transform: rotate(-135deg);
+	}
+	#nav-dl:active {
+		transform: rotate(-135deg) scale(0.9);
+	}
+
+	#nav-dr {
+		transform: rotate(135deg);
+	}
+	#nav-dr:active {
+		transform: rotate(135deg) scale(0.9);
+	}
+
+	/* Helper pour cacher les boutons inutiles */
+	.nav-arrow.hidden {
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	/* -- Game World Zoomé -- */
+	#game-world {
+		width: 250vw;
+		height: 250vh;
+		transform-origin: 0 0;
+	}
+
+	/* -- Tracker Panel Plein Écran -- */
+	#tracker-panel {
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		right: auto;
+		bottom: auto;
+		border-left: none;
+		border-radius: 0;
+		transform: translateX(100%);
+		transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+		box-sizing: border-box;
+		z-index: 3000;
+	}
+
+	#tracker-panel.open {
+		transform: translateX(0);
+		right: auto;
+	}
+
+	#pattern-menu {
+		left: 50%;
+		transform: translateX(-50%);
+		bottom: 100px;
+		max-width: 90vw;
+	}
+
+	#bottom-menu {
+		left: 10px;
+		bottom: 10px;
+		transform: scale(0.8);
+		transform-origin: bottom left;
+	}
+
+	.modal-box {
+		width: 90%;
+		max-width: 350px;
 	}
 }

@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <title>Astra Malorum - Head Protector Relic Tracker !</title>
     <meta name="title" content="Astra Malorum - Head Protector Relic Tracker !" />
@@ -39,26 +39,41 @@
 
 <body>
 
-    <div id="mobile-warning">
-        <h1>This page is not responsive at the moment</h1>
-        <p>We tried to create this page mobile-first, but due to the difficulty of integrating the chandeliers correctly
-            without them being too small, we had to abandon that and go with a web-only approach. The mobile version is
-            therefore under development. We recommend launching this page on a browser with a sufficiently large size to
-            avoid ruining the user experience. Sorry for the inconvenience.</p>
+    <div id="mobile-warning" style="display:none;"></div>
+
+    <div id="camera-frame">
+        <div id="game-world">
+            <svg id="arrow-layer">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#27ae60" />
+                    </marker>
+                    <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#3498db" />
+                    </marker>
+                </defs>
+            </svg>
+            <div id="grid-container"></div>
+        </div>
     </div>
 
-    <svg id="arrow-layer">
-        <defs>
-            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="#27ae60" />
-            </marker>
-            <marker id="arrowhead-blue" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-                <polygon points="0 0, 10 3.5, 0 7" fill="#3498db" />
-            </marker>
-        </defs>
-    </svg>
+    <div id="mobile-nav">
+        <div class="d-pad" id="d-pad">
+            <button class="nav-arrow nav-diag" id="nav-ul">▲</button>
+            <button class="nav-arrow nav-cardinal" id="nav-up">▲</button>
+            <button class="nav-arrow nav-diag" id="nav-ur">▲</button>
 
-    <div id="grid-container"></div>
+            <button class="nav-arrow nav-cardinal" id="nav-left">◀</button>
+
+            <button class="nav-arrow zoom-btn" id="nav-zoom-toggle">🔍</button>
+
+            <button class="nav-arrow nav-cardinal" id="nav-right">▶</button>
+
+            <button class="nav-arrow nav-diag" id="nav-dl">▲</button>
+            <button class="nav-arrow nav-cardinal" id="nav-down">▼</button>
+            <button class="nav-arrow nav-diag" id="nav-dr">▲</button>
+        </div>
+    </div>
 
     <div id="bottom-menu">
         <div class="menu-toggle-btn" id="menu-toggle-btn">Options Menu ▲</div>
@@ -286,10 +301,12 @@
             <div class="modal-title" style="color:var(--accent-orange-hover);">Share Track URL</div>
 
             <div class="modal-text"
-                style="text-align:left; margin-bottom:5px; font-size:11px; color:#aaa; font-weight:700;">RAW URL</div>
+                style="text-align:left; margin-bottom:5px; font-size:11px; color:#aaa; font-weight:700;">RAW URL
+            </div>
             <input type="text" id="share-url-input" class="share-input" readonly onclick="this.select()">
             <button class="btn-modal" id="btn-share-copy"
-                style="background: var(--accent-blue); color: white; width:100%; padding:8px; font-size:12px;">Copy URL
+                style="background: var(--accent-blue); color: white; width:100%; padding:8px; font-size:12px;">Copy
+                URL
                 to Clipboard</button>
 
             <div id="url-status" class="url-status-box"></div>
@@ -297,12 +314,14 @@
             <div class="modal-separator"></div>
 
             <div class="modal-text"
-                style="text-align:left; margin-bottom:5px; font-size:11px; color:#aaa; font-weight:700;">DISCORD FORMAT
+                style="text-align:left; margin-bottom:5px; font-size:11px; color:#aaa; font-weight:700;">DISCORD
+                FORMAT
             </div>
             <input type="text" id="share-markdown-input" class="share-input" readonly onclick="this.select()">
 
             <div class="share-actions-row">
-                <button class="btn-discord" id="btn-share-markdown" style="margin-top:0; font-size:12px;">Copy Discord
+                <button class="btn-discord" id="btn-share-markdown" style="margin-top:0; font-size:12px;">Copy
+                    Discord
                     Markdown</button>
                 <button class="btn-help" id="btn-md-help" title="What is this?">?</button>
             </div>
@@ -311,7 +330,8 @@
                 <strong>What is Markdown?</strong><br>
                 It is a way to create a clean, clickable link instead of pasting a massive URL.<br><br>
                 <strong>Why use it?</strong><br>
-                Since the generated URL is very long, pasting it directly into Discord looks messy and "scary" to click.
+                Since the generated URL is very long, pasting it directly into Discord looks messy and "scary" to
+                click.
                 Using this format hides the code behind a nice title like <em>[My Project Name]</em>.
             </div>
 

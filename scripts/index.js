@@ -67,6 +67,166 @@ const State = {
 	pendingImport: null,
 };
 
+// --- MOBILE CAMERA MANAGER ---
+const MobileManager = {
+	currentView: 0, // 0:TL, 1:TR, 2:BL, 3:BR
+	isZoomedIn: true, // CORRECTION : On commence ZOOMÉ (Focus) par défaut
+
+	views: [
+		{ x: -10, y: -10, id: 'Top-Left (1)' }, // 0
+		{ x: -50, y: -10, id: 'Top-Right (2)' }, // 1
+		{ x: -10, y: -50, id: 'Bot-Left (4)' }, // 2
+		{ x: -50, y: -50, id: 'Bot-Right (3)' }, // 3
+	],
+
+	init() {
+		// CORRECTION : On force l'état initial zoomé
+		this.isZoomedIn = true;
+
+		// On met à jour l'icône tout de suite
+		const btn = document.getElementById('nav-zoom-toggle');
+		if (btn) btn.textContent = '🔍';
+
+		this.updateCamera();
+		this.updateNavButtons();
+
+		window.addEventListener('resize', () => {
+			if (window.innerWidth > 768) {
+				this.reset();
+			} else {
+				this.updateCamera();
+			}
+		});
+	},
+
+	reset() {
+		const world = document.getElementById('game-world');
+		if (world) world.style.transform = '';
+	},
+
+	move(direction) {
+		if (!this.isZoomedIn) return;
+
+		let next = this.currentView;
+
+		if (direction === 'up') {
+			if (this.currentView === 2) next = 0;
+			if (this.currentView === 3) next = 1;
+		} else if (direction === 'down') {
+			if (this.currentView === 0) next = 2;
+			if (this.currentView === 1) next = 3;
+		} else if (direction === 'left') {
+			if (this.currentView === 1) next = 0;
+			if (this.currentView === 3) next = 2;
+		} else if (direction === 'right') {
+			if (this.currentView === 0) next = 1;
+			if (this.currentView === 2) next = 3;
+		} else if (direction === 'dr') {
+			// Down-Right (TL -> BR)
+			if (this.currentView === 0) next = 3;
+		} else if (direction === 'dl') {
+			// Down-Left (TR -> BL)
+			if (this.currentView === 1) next = 2;
+		} else if (direction === 'ur') {
+			// Up-Right (BL -> TR)
+			if (this.currentView === 2) next = 1;
+		} else if (direction === 'ul') {
+			// Up-Left (BR -> TL)
+			if (this.currentView === 3) next = 0;
+		}
+
+		if (next !== this.currentView) {
+			this.currentView = next;
+			this.updateCamera();
+			this.updateNavButtons();
+		}
+	},
+
+	toggleZoom() {
+		this.isZoomedIn = !this.isZoomedIn;
+
+		const btn = document.getElementById('nav-zoom-toggle');
+		// Si on est zoomé, le bouton propose de dézoomer (Télescope/Vue large)
+		// Si on est dézoomé, le bouton propose de zoomer (Loupe)
+		btn.textContent = this.isZoomedIn ? '🔭' : '🔍'; // Icônes inversées pour la logique "action à faire"
+
+		// Ou si vous préférez l'icône de l'état actuel :
+		// btn.textContent = this.isZoomedIn ? '🔍' : '🔭';
+
+		this.updateCamera();
+		this.updateNavButtons();
+	},
+
+	updateCamera() {
+		const world = document.getElementById('game-world');
+
+		if (!this.isZoomedIn) {
+			// Vue d'ensemble
+			world.style.transform = `scale(0.4) translate(0%, 0%)`;
+		} else {
+			// Vue Focus
+			const pos = this.views[this.currentView];
+			world.style.transform = `scale(1.0) translate(${pos.x}%, ${pos.y}%)`;
+		}
+	},
+
+	updateNavButtons() {
+		const dPad = document.getElementById('d-pad');
+
+		// CORRECTION : On utilise la classe CSS pour cacher les flèches uniquement
+		if (!this.isZoomedIn) {
+			dPad.classList.add('overview-mode');
+			return; // On arrête ici, pas besoin de calculer quelles flèches cacher, elles le sont toutes
+		}
+
+		dPad.classList.remove('overview-mode');
+
+		// Logique de masquage des flèches inaccessibles (Bords de map)
+		const btns = {
+			up: document.getElementById('nav-up'),
+			down: document.getElementById('nav-down'),
+			left: document.getElementById('nav-left'),
+			right: document.getElementById('nav-right'),
+			ul: document.getElementById('nav-ul'),
+			ur: document.getElementById('nav-ur'),
+			dl: document.getElementById('nav-dl'),
+			dr: document.getElementById('nav-dr'),
+		};
+
+		Object.values(btns).forEach((b) => b && b.classList.remove('hidden'));
+
+		if (this.currentView === 0) {
+			// TL
+			btns.up.classList.add('hidden');
+			btns.left.classList.add('hidden');
+			btns.ul.classList.add('hidden');
+			btns.ur.classList.add('hidden');
+			btns.dl.classList.add('hidden');
+		} else if (this.currentView === 1) {
+			// TR
+			btns.up.classList.add('hidden');
+			btns.right.classList.add('hidden');
+			btns.ul.classList.add('hidden');
+			btns.ur.classList.add('hidden');
+			btns.dr.classList.add('hidden');
+		} else if (this.currentView === 2) {
+			// BL
+			btns.down.classList.add('hidden');
+			btns.left.classList.add('hidden');
+			btns.ul.classList.add('hidden');
+			btns.dl.classList.add('hidden');
+			btns.dr.classList.add('hidden');
+		} else if (this.currentView === 3) {
+			// BR
+			btns.down.classList.add('hidden');
+			btns.right.classList.add('hidden');
+			btns.ur.classList.add('hidden');
+			btns.dl.classList.add('hidden');
+			btns.dr.classList.add('hidden');
+		}
+	},
+};
+
 class Candle {
 	constructor(parentId, index, x, y, parentChandelier, initialState = 0) {
 		this.id = `${parentId}_candle_${index}`;
@@ -273,6 +433,9 @@ const GameManager = {
 		this.checkCurrentPattern();
 		this.updateLockUI();
 		Tracker.checkUrlImport();
+
+		// Init Mobile View
+		MobileManager.init();
 	},
 
 	renderGrid() {
@@ -571,6 +734,39 @@ const GameManager = {
 		});
 
 		updateCounter();
+
+		// --- MOBILE NAV LISTENERS ---
+		document
+			.getElementById('nav-up')
+			.addEventListener('click', () => MobileManager.move('up'));
+		document
+			.getElementById('nav-down')
+			.addEventListener('click', () => MobileManager.move('down'));
+		document
+			.getElementById('nav-left')
+			.addEventListener('click', () => MobileManager.move('left'));
+		document
+			.getElementById('nav-right')
+			.addEventListener('click', () => MobileManager.move('right'));
+
+		// Nouvelles Diagonales
+		document
+			.getElementById('nav-ul')
+			.addEventListener('click', () => MobileManager.move('ul'));
+		document
+			.getElementById('nav-ur')
+			.addEventListener('click', () => MobileManager.move('ur'));
+		document
+			.getElementById('nav-dl')
+			.addEventListener('click', () => MobileManager.move('dl'));
+		document
+			.getElementById('nav-dr')
+			.addEventListener('click', () => MobileManager.move('dr'));
+
+		// Zoom Toggle
+		document
+			.getElementById('nav-zoom-toggle')
+			.addEventListener('click', () => MobileManager.toggleZoom());
 	},
 
 	setupDragDrop() {
@@ -1017,6 +1213,13 @@ const GameManager = {
 		const svg = document.getElementById('arrow-layer');
 		const fragment = document.createDocumentFragment();
 
+		// FIX: We need coordinates relative to the #game-world container.
+		const worldRect = document
+			.getElementById('game-world')
+			.getBoundingClientRect();
+		const scaleX =
+			worldRect.width / document.getElementById('game-world').offsetWidth;
+
 		for (let i = 0; i < sequence.length - 1; i++) {
 			const item1 = sequence[i];
 			const item2 = sequence[i + 1];
@@ -1028,8 +1231,21 @@ const GameManager = {
 
 			if (!start || !end) continue;
 
-			const p1 = start.getCenter();
-			const p2 = end.getCenter();
+			// Get rectangles
+			const r1 = start.dom.aspectBox.getBoundingClientRect();
+			const r2 = end.dom.aspectBox.getBoundingClientRect();
+
+			// Calculate center relative to worldRect
+			// This works regardless of the 'translate' on the world,
+			// because both the arrow-layer and the chandeliers are inside it.
+			const p1 = {
+				x: r1.left - worldRect.left + r1.width / 2,
+				y: r1.top - worldRect.top + r1.height / 2,
+			};
+			const p2 = {
+				x: r2.left - worldRect.left + r2.width / 2,
+				y: r2.top - worldRect.top + r2.height / 2,
+			};
 
 			const angle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
 			const offset = 60;
