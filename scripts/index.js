@@ -883,7 +883,6 @@ const GameManager = {
 	toggleTracker() {
 		const p = document.getElementById('tracker-panel');
 		p.classList.toggle('open');
-		if (!p.classList.contains('open')) this.clearArrows();
 	},
 
 	resetGame() {
