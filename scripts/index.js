@@ -1964,4 +1964,179 @@ const Tracker = {
 	},
 };
 
-window.onload = () => GameManager.init();
+const AutoModalSystem = {
+	folderPath: './news/',
+	manifestFile: 'manifest.json',
+	storageKey: 'astra_news_log',
+	baseZIndex: 10000,
+
+	async init() {
+		try {
+			const response = await fetch(
+				`${this.folderPath}${this.manifestFile}`,
+			);
+			if (!response.ok) return;
+
+			const remoteFiles = await response.json();
+			let localLog = JSON.parse(
+				localStorage.getItem(this.storageKey) || '{}',
+			);
+
+			Object.keys(localLog).forEach((file) => {
+				if (!remoteFiles[file]) {
+					delete localLog[file];
+				}
+			});
+
+			let stackIndex = 0;
+			const filesToProcess = Object.keys(remoteFiles);
+
+			for (const filename of filesToProcess) {
+				const remoteDate = new Date(remoteFiles[filename]).getTime();
+				const localDate = localLog[filename]
+					? new Date(localLog[filename]).getTime()
+					: 0;
+
+				if (!localLog[filename] || remoteDate > localDate) {
+					await this.fetchAndBuildModal(filename, stackIndex);
+
+					localLog[filename] = remoteFiles[filename];
+					stackIndex++;
+				}
+			}
+
+			localStorage.setItem(this.storageKey, JSON.stringify(localLog));
+		} catch (e) {
+			console.warn('AutoModalSystem: Error checking news', e);
+		}
+	},
+
+	async fetchAndBuildModal(filename, index) {
+		try {
+			const res = await fetch(`${this.folderPath}${filename}`);
+			const htmlContent = await res.text();
+			this.createModal(htmlContent, index);
+		} catch (e) {
+			console.error(`Failed to load ${filename}`, e);
+		}
+	},
+
+	createModal(content, index) {
+		const parser = new DOMParser();
+		const doc = parser.parseFromString(content, 'text/html');
+		const container = doc.body.firstChild;
+
+		if (!container) return;
+
+		const isMobileOnly = container.classList.contains('mobile-only');
+		const isFiesta = container.classList.contains('fiesta');
+		const currentZIndex = this.baseZIndex + index;
+
+		const overlay = document.createElement('div');
+		overlay.className = 'modal-overlay';
+		overlay.style.display = 'flex';
+		overlay.style.zIndex = currentZIndex;
+		overlay.id = `news-modal-${index}`;
+
+		const box = document.createElement('div');
+		box.className = 'modal-box';
+		box.style.animation = 'fadeIn 0.3s ease-out';
+		box.innerHTML = content;
+
+		const btnContainer = document.createElement('div');
+		btnContainer.className = 'modal-buttons';
+		btnContainer.style.marginTop = '20px';
+
+		const btnClose = document.createElement('button');
+		btnClose.className = 'btn-modal';
+		btnClose.textContent = 'Read and Understood';
+		btnClose.style.background = '#7f8c8d';
+		btnClose.style.color = 'white';
+		btnClose.style.width = '100%';
+
+		btnClose.onclick = () => {
+			overlay.style.opacity = '0';
+			setTimeout(() => overlay.remove(), 300);
+		};
+
+		btnContainer.appendChild(btnClose);
+		box.appendChild(btnContainer);
+		overlay.appendChild(box);
+
+		if (isMobileOnly) {
+			this.handleMobileLogic(overlay, isFiesta, currentZIndex);
+		} else {
+			document.body.appendChild(overlay);
+			if (isFiesta) {
+				this.triggerFiesta(currentZIndex);
+			}
+		}
+	},
+
+	handleMobileLogic(overlayElement, isFiesta, modalZIndex) {
+		const checkMobile = () => window.innerWidth <= 768;
+
+		const show = () => {
+			document.body.appendChild(overlayElement);
+			if (isFiesta) {
+				this.triggerFiesta(modalZIndex);
+			}
+		};
+
+		if (checkMobile()) {
+			show();
+		} else {
+			let hasBeenShown = false;
+			const resizeListener = () => {
+				if (!hasBeenShown && checkMobile()) {
+					show();
+					hasBeenShown = true;
+					window.removeEventListener('resize', resizeListener);
+				}
+			};
+			window.addEventListener('resize', resizeListener);
+		}
+	},
+
+	triggerFiesta(modalZIndex) {
+		const confettiZIndex = modalZIndex + 50;
+
+		const duration = 3 * 250;
+		const animationEnd = Date.now() + duration;
+		const colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6'];
+
+		(function frame() {
+			const timeLeft = animationEnd - Date.now();
+
+			if (timeLeft <= 0) return;
+
+			const particleCount = 10 * (timeLeft / duration);
+
+			confetti({
+				particleCount: 5,
+				count: 10,
+				angle: 60,
+				spread: 55,
+				origin: { x: 0, y: 0.9 },
+				colors: colors,
+				zIndex: confettiZIndex,
+			});
+			confetti({
+				particleCount: 5,
+				count: 10,
+				angle: 120,
+				spread: 55,
+				origin: { x: 1, y: 0.9 },
+				colors: colors,
+				zIndex: confettiZIndex,
+			});
+
+			requestAnimationFrame(frame);
+		})();
+	},
+};
+
+window.onload = () => {
+	GameManager.init();
+	AutoModalSystem.init();
+};

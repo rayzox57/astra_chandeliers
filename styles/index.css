@@ -923,12 +923,14 @@ img {
 .modal-box {
 	background: #2c3e50;
 	border: 1px solid #34495e;
-	padding: 20px;
-	border-radius: 8px;
+	padding: 25px;
+	border-radius: 12px;
 	color: white;
 	text-align: center;
-	width: 300px;
-	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+	width: 500px;
+	max-width: 95vw;
+	box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+	box-sizing: border-box;
 }
 
 .modal-title {
@@ -1156,8 +1158,9 @@ img {
 	}
 
 	.modal-box {
-		width: 90%;
+		width: 85% !important;
 		max-width: 350px;
+		margin: 0 auto;
 	}
 }
 
