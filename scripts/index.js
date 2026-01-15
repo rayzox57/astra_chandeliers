@@ -984,13 +984,15 @@ const GameManager = {
 			}
 
 			if (i <= activeIndices.length) {
-				slotEl.style.display = 'flex';
+				slotEl.classList.remove('slot-disabled');
 			} else {
-				slotEl.style.display = 'none';
-				if (slotEl.hasChildNodes())
+				slotEl.classList.add('slot-disabled');
+
+				if (slotEl.hasChildNodes()) {
 					document
 						.getElementById('order-pool')
 						.appendChild(slotEl.firstChild);
+				}
 			}
 		}
 		Tracker.updatePreview();
