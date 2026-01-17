@@ -177,7 +177,10 @@ img {
 .candle-element {
 	position: absolute;
 	cursor: pointer;
-	transition: transform 0.2s ease, filter 0.2s ease, opacity 0.3s;
+	transition:
+		transform 0.2s ease,
+		filter 0.2s ease,
+		opacity 0.3s;
 	z-index: 20;
 	pointer-events: auto;
 }
@@ -305,7 +308,7 @@ img {
 	overflow: hidden;
 	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	pointer-events: none;
-	width: 200px;
+	width: 300px;
 }
 
 #bottom-menu.open .menu-content {
@@ -354,6 +357,20 @@ img {
 
 #btn-pattern {
 	background: rgba(0, 0, 255, 0.05);
+}
+
+.btn-ui.new {
+	justify-content: flex-start;
+}
+
+.btn-ui.new::before {
+	content: 'NEW !';
+	font-size: 12px;
+	background: var(--accent-blue);
+	color: #fff;
+	padding: 2px 4px;
+	border-radius: 4px;
+	margin-right: 10px;
 }
 
 .btn-ui:hover {
@@ -410,6 +427,17 @@ img {
 
 #btn-credits:hover {
 	background: rgba(26, 188, 156, 0.4);
+	color: #fff;
+}
+
+#btn-secret {
+	border-color: rgba(255, 204, 0, 0.5);
+	color: #fff;
+	background: rgba(255, 204, 0, 0.2);
+}
+
+#btn-secret:hover {
+	background: rgba(255, 204, 0, 0.4);
 	color: #fff;
 }
 
@@ -593,7 +621,9 @@ img {
 	cursor: grab;
 	user-select: none;
 	box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-	transition: transform 0.1s, background 0.2s;
+	transition:
+		transform 0.1s,
+		background 0.2s;
 }
 
 .drag-item:active {

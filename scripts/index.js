@@ -485,6 +485,10 @@ const GameManager = {
 				'Options Menu ▲';
 		});
 
+		document.getElementById('btn-secret').addEventListener('click', () => {
+			window.open('https://rayzox57.github.io/astra_malorum/', '_blank');
+		});
+
 		document
 			.getElementById('btn-credits-close')
 			.addEventListener('click', () => {
